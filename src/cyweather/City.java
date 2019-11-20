@@ -11,16 +11,7 @@ interface iFace {
 	void showNow();
 }
 
-class CityNotFoundException extends Exception {
-	int errorCode;
-	String errorMsg;
-	
-	public CityNotFoundException() {
-		this.errorCode = 101;
-		this.errorMsg = "The city cannot be found!";
-	}	
-	
-}
+
 
 abstract class State {
 	public int latitude;
