@@ -1,0 +1,180 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+ext {
+    pomFile = file("${project.projectDir}/tmp/pom.xml")
+}
+// add configuration for pom signing
+configurations {
+    pom
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from tasks.javadoc.destinationDir
+    getArchiveClassifier().set('javadoc')
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    getArchiveClassifier().set('sources')
+}
+
+// sign all artifacts
+task signJars(type: Sign, dependsOn: [jar, javadocJar, sourcesJar]) {
+    sign configurations.archives
+}
+
+// sign pom
+task signPom(type: Sign) {
+    sign configurations.pom
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+    if (pomFile.exists()) {
+        pom pomFile
+    }
+}
+
+// defining which tasks should be called
+if (project.ext.pomFile.exists()) {
+    task preparePublication(dependsOn: [signJars, signPom])
+} else {
+    task preparePublication(dependsOn: signJars)
+}
+
+// extract signatures and add classifier and extension to them
+final def getSignatureFiles = {
+    final def allFiles = project.tasks.signJars.signatureFiles.collect { it }
+    final def signedSources = allFiles.find { it.name.contains('-sources') }
+    final def signedJavadoc = allFiles.find { it.name.contains('-javadoc') }
+    final def signedJar = (allFiles - [signedSources, signedJavadoc])[0]
+    return [
+            [archive: signedSources, classifier: 'sources', extension: 'jar.asc'],
+            [archive: signedJavadoc, classifier: 'javadoc', extension: 'jar.asc'],
+            [archive: signedJar, classifier: null, extension: 'jar.asc']
+    ]
+}
+
+// extract pom signature
+final def getPomSignature = {
+    return project.tasks.signPom.signatureFiles.collect { it }[0]
+}
+
+publishing {
+    publications {
+        gpgJars(MavenPublication) {
+            getSignatureFiles().each { final signature ->
+                artifact(signature.archive) {
+                    classifier = signature.classifier
+                    extension = signature.extension
+                }
+            }
+        }
+        if (project.ext.pomFile.exists()) {
+            gpgPom(MavenPublication) {
+                artifact(getPomSignature()) {
+                    classifier = null
+                    extension = 'pom.asc'
+                }
+            }
+        }
+
+        jars(MavenPublication) {
+            from components.java
+            artifact sourcesJar {
+                getArchiveClassifier().set('sources')
+            }
+            artifact javadocJar {
+                getArchiveClassifier().set('javadoc')
+            }
+            pom.withXml {
+                asNode().dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { final dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each { it.scope*.value = 'compile' }
+                asNode().children().last() + {
+                    resolveStrategy = DELEGATE_FIRST
+                    name "${project.name}"
+                    url 'https://github.com/xSAVIKx/openweathermap-java-api'
+                    scm {
+                        url 'https://github.com/xSAVIKx/openweathermap-java-api'
+                        connection 'scm:https://github.com/xSAVIKx/openweathermap-java-api.git'
+                        developerConnection 'scm:git://github.com:xSAVIKx/openweathermap-java-api.git'
+                    }
+                    issueManagement {
+                        system 'GitHub'
+                        url 'https://github.com/xSAVIKx/openweathermap-java-api/issues'
+                    }
+                    ciManagement {
+                        system 'Travis-CI'
+                        url 'https://travis-ci.org/xSAVIKx/openweathermap-java-api'
+                    }
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'https://github.com/xSAVIKx/openweathermap-java-api/blob/master/LICENSE'
+                            distribution 'repo'
+                            comments 'A business-friendly OSS license'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id 'xSAVIKx'
+                            name 'Yurii Serhiichuk'
+                            email 'iurii.sergiichuk@gmail.com'
+                            roles {
+                                role 'developer'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUsername') ? project.getProperty('bintrayUsername') : System.getenv('BINTRAY_USER') ?: ''
+    key = project.hasProperty('bintrayApiKey') ? project.getProperty('bintrayApiKey') : System.getenv('BINTRAY_KEY') ?: ''
+    publications = ['jars']
+    pkg {
+        repo = 'openweathermap-java-api'
+        name = "${project.name}"
+        desc = "openweathermap.org Java API ${project.name} module."
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/xSAVIKx/openweathermap-java-api.git'
+        websiteUrl = 'https://github.com/xSAVIKx/openweathermap-java-api'
+        issueTrackerUrl = 'https://github.com/xSAVIKx/openweathermap-java-api/issues'
+        githubRepo = 'xSAVIKx/openweathermap-java-api'
+        githubReleaseNotesFile = 'README.md'
+        version {
+            name = project.version
+            desc = "openweathermap.org Java API module ${project.name} v.${project.version}"
+            released = new Date()
+            vcsTag = project.version
+        }
+    }
+}
+
+/**
+ * Appends given {@code description} text to the POM {@code description} node.
+ */
+def appendPomDescription(description) {
+    project.publishing {
+        publications {
+            jars(MavenPublication) {
+                pom.withXml {
+                    asNode().appendNode('description', description)
+                }
+            }
+        }
+    }
+}
+
+ext.appendPomDescription = this.&appendPomDescription

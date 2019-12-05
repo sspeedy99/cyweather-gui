@@ -14,23 +14,15 @@ interface iFace {
 
 
 abstract class State {
-	public int latitude;
-	public int longitude;
+	public double latitude = Seed.lattitude;
+	public double longitude = Seed.longitude;
 	
 	
-	public State(int lat, int longi) {
-		this.latitude = lat;
-		this.longitude = longi;
-	}
 }
 
 public class City extends State implements iFace {
 	String cityName;
 	
-	public City(int lat, int longi, String cityName) {
-		super(lat, longi);
-		this.cityName = cityName;
-	}
 	
 	void setCity() {
 		System.out.println("Enter the city, you want to search!");
@@ -64,6 +56,8 @@ public class City extends State implements iFace {
 		
 		if(flag) {
 			System.out.println("The city found, starting execution");
+			this.cityName = city;
+			Seed.seedForecast(this.cityName);
 		} else {
 			System.out.println("City not found!");
 		}

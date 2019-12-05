@@ -1,0 +1,9 @@
+dependencies {
+    compile deps.gson
+}
+
+appendPomDescription('Java API to access openweathermap.org API common elements')
+
+setJarManifestName('org/openweathermap/api/common/')
+setJarManifestSpecificationTitle('OpenWeatherMap Java API:common')
+setJarManifestImplementationTitle('org.openweathermap.api.common')
