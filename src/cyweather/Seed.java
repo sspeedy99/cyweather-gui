@@ -24,8 +24,8 @@ public class Seed {
 	  public static double rain;
 
 	  public static void seedForecast(String city) {
-		  String url = "http://dataservice.accuweather.com/locations/v1/cities/search?apikey=wBEbW26CMsd8ZdA8GB1Lz56V5oPFkqYP&q=";
-		  String forecastUrl = "http://dataservice.accuweather.com/currentconditions/v1/?apikey=wBEbW26CMsd8ZdA8GB1Lz56V5oPFkqYP&details=true";
+		  String url = "http://dataservice.accuweather.com/locations/v1/cities/search?apikey=1yww6BUQLLsigzdnuOfgr9VOcwbEe7N0&q=";
+		  String forecastUrl = "http://dataservice.accuweather.com/currentconditions/v1/?apikey=1yww6BUQLLsigzdnuOfgr9VOcwbEe7N0&details=true";
           StringBuffer newUrl = new StringBuffer(url);
           newUrl.insert(104, city);
           //System.out.println(newUrl);

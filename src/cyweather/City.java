@@ -22,6 +22,7 @@ abstract class State {
 
 public class City extends State implements iFace {
 	String cityName;
+	public static boolean flag = false;
 	
 	
 	void setCity() {
