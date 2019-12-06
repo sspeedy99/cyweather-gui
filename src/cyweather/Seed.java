@@ -110,17 +110,22 @@ public class Seed {
 	            JSONObject jsonMaxRainForecast = (JSONObject) jsonMaxRangeRainForecast.get("Metric");
 	            rain = (Double) jsonMaxRainForecast.get("Value");
 	            
-//	            System.out.println(currentTemp);
-//	            System.out.println(maximumTemp);
-//	            System.out.println(minimumTemp);
-//	            System.out.println(averageTemp);
-//	            System.out.println(humid);
-//	            System.out.println(rain);
+
 	              
 
 	        }
 	        catch (IOException ioe) { System.err.println("Something went wrong getting the weather: ");  ioe.printStackTrace(); }
 	        catch (Exception e ){ System.err.println("Unknown error: "); e.printStackTrace(); }
 	  }
+	  
+	  public static void details() {
+	      System.out.println(currentTemp);
+	      System.out.println(maximumTemp);
+	      System.out.println(minimumTemp);
+	      System.out.println(averageTemp);
+	      System.out.println(humid);
+	      System.out.println(rain);
+	  }
+
 
 }

@@ -9,6 +9,8 @@ abstract class Forecast {
 	 public double averageTemprature = Seed.averageTemp;
 	 public long humidity = Seed.humid;
 	 public double rainfall = Seed.rain;
+	 public double latitude = Seed.lattitude;
+	 public double longitude = Seed.longitude;
 	 public String summary;
 	 
 	 public void getAvgTemp () {}
@@ -44,7 +46,7 @@ public class DayForecast extends Forecast implements iFace {
 		System.out.println("Maximum Temprature of the day is  :" + this.maximumTemprature + "C");
 		System.out.println("Minimum Temprature of the day is  :" + this.minimumTemprature + "C");
 		System.out.println("Average Temprature of the day is  :" + this.averageTemprature + "C");
-		System.out.println("Humidity of the day is  :" + this.humidity + "mm");
+		System.out.println("Humidity of the day is  :" + this.humidity + "%");
 		System.out.println("Average Rainfall of the day is  :" + this.rainfall + "mm");
 		summ();
 	
